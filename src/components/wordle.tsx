@@ -30,6 +30,7 @@ const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) =>
   event.preventDefault();
 
 const WordleRow = ({ index }: { index: number }) => {
+  const letterInfos = useStore(({ words }) => words[index]);
   const setLetter = useStore(({ setLetter }) => setLetter);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const onKeyUp = (
@@ -43,7 +44,15 @@ const WordleRow = ({ index }: { index: number }) => {
         inputs.current[letterIndex - 1]?.focus();
       }
     } else if (new RegExp(REGEX_HEBREW).test(event.key)) {
-      setLetter(index, letterIndex, { letter: event.key });
+      if (
+        index < 4 &&
+        event.currentTarget.value !== "" &&
+        letterInfos?.[letterIndex + 1]?.letter === null
+      ) {
+        setLetter(index, letterIndex + 1, { letter: event.key });
+      } else {
+        setLetter(index, letterIndex, { letter: event.key });
+      }
       inputs.current[letterIndex + 1]?.focus();
     } else if (event.key === "ArrowRight") {
       if (letterIndex > 0) {
@@ -51,6 +60,12 @@ const WordleRow = ({ index }: { index: number }) => {
       }
     } else if (event.key === "ArrowLeft") {
       inputs.current[letterIndex + 1]?.focus();
+    } else if (event.key === "0") {
+      setLetter(index, letterIndex, { mode: "grey" });
+    } else if (event.key === "1") {
+      setLetter(index, letterIndex, { mode: "yellow" });
+    } else if (event.key === "2") {
+      setLetter(index, letterIndex, { mode: "green" });
     }
   };
 
