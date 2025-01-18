@@ -48,6 +48,7 @@ export const SuggestedWords = ({ className }: { className?: string }) => {
       <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
         ניחושים מומלצים
       </h3>
+
       <div className="px-3">
         <div className="flex items-center gap-2 cursor-pointer my-2">
           <Checkbox
@@ -62,18 +63,22 @@ export const SuggestedWords = ({ className }: { className?: string }) => {
             מצב קשה
           </label>
         </div>
-        <Table>
-          <TableBody>
-            {ratedWords.slice(0, 10).map(({ word, score }) => (
-              <TableRow key={word}>
-                <TableCell className="w-2/3">{word}</TableCell>
-                <TableCell className="w-1/3">
-                  {Math.round(score * 100)}%
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        {allowedWords.length === 0 ? (
+          <p className="leading-7 mt-6">אין כאן מילים, אולי טעית?</p>
+        ) : (
+          <Table>
+            <TableBody>
+              {ratedWords.slice(0, 10).map(({ word, score }) => (
+                <TableRow key={word}>
+                  <TableCell className="w-2/3">{word}</TableCell>
+                  <TableCell className="w-1/3">
+                    {Math.round(score * 100)}%
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </div>
   );

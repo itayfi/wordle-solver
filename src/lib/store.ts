@@ -120,7 +120,9 @@ function calculateConstraints(words: LetterInfo[][]): Store["constraints"] {
           yellowByIndex.get(letterIndex)?.add(normalizedLetter);
           break;
         case "grey":
-          greys.add(normalizedLetter);
+          if (!yellows.has(normalizedLetter)) {
+            greys.add(normalizedLetter);
+          }
       }
     }
   }
