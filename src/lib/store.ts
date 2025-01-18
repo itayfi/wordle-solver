@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist, StorageValue } from "zustand/middleware";
 import { Constraints, LetterInfo } from "@/lib/types.ts";
+import { normalizeFinalLetters } from "@/lib/utils.ts";
 
 type Store = {
   words: LetterInfo[][];
@@ -12,9 +13,6 @@ type Store = {
     data: Partial<LetterInfo>,
   ): void;
   reset(): void;
-  //   setGreen(index: number, letter: string): void;
-  //   setYellow(index: number, letter: string, count: number): void;
-  //   setGrey(index: number, letter: string, count: number): void;
 };
 
 export const useStore = create(
@@ -66,7 +64,32 @@ export const useStore = create(
     }),
     {
       name: "wordle-store",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: {
+        getItem(name: string) {
+          const raw = sessionStorage.getItem(name);
+          if (!raw) {
+            return null;
+          }
+          const existing = JSON.parse(raw) as StorageValue<Store>;
+          const constraints = calculateConstraints(existing.state.words);
+          return {
+            ...existing,
+            state: { words: existing.state.words, constraints },
+          } as StorageValue<Store>;
+        },
+        setItem(name: string, data: StorageValue<Store>) {
+          const str = JSON.stringify({
+            ...data,
+            state: {
+              words: data.state.words,
+            },
+          });
+          localStorage.setItem(name, str);
+        },
+        removeItem(name: string) {
+          localStorage.removeItem(name);
+        },
+      },
     },
   ),
 );
@@ -82,13 +105,13 @@ function calculateConstraints(words: LetterInfo[][]): Store["constraints"] {
       if (letter === null) continue;
       switch (mode) {
         case "green":
-          greens[letterIndex] = letter;
+          greens[letterIndex] = normalizeFinalLetters(letter);
           break;
         case "yellow":
-          yellows.add(letter);
+          yellows.add(normalizeFinalLetters(letter));
           break;
         case "grey":
-          greys.add(letter);
+          greys.add(normalizeFinalLetters(letter));
       }
     }
   }

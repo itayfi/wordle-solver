@@ -102,15 +102,16 @@ const WordleLetter = forwardRef(
           type="text"
           pattern={REGEX_HEBREW_SIGNLE}
           className={cn(
-            "relative peer bg-background flex size-12 text-center border-y border-e border-input text-xl shadow-sm transition-all group-first:rounded-s-md group-first:border-s group-last:rounded-e-md focus:ring-1 focus:ring-ring focus:z-10",
+            "relative peer bg-background flex size-12 text-center border-y border-e border-input text-xl font-bold shadow-sm transition-all group-first:rounded-s-md group-first:border-s group-last:rounded-e-md focus:ring-1 focus:ring-ring focus:z-10",
             {
               "bg-emerald-700": mode === "green",
               "bg-yellow-400": mode === "yellow",
               "bg-neutral-500": mode === "grey",
+              "text-white": mode !== null,
             },
           )}
         />
-        <div className="absolute hidden peer-focus:flex group-hover:flex flex-row bg-background gap-1 border rounded-sm shadow-sm p-2 z-10">
+        <div className="absolute left-1/2 -translate-x-1/2 hidden peer-focus:flex group-hover:flex flex-row bg-background gap-1 border rounded-sm shadow-sm p-2 z-10">
           <LetterModeButton
             mode="green"
             isSelected={mode === "green"}
