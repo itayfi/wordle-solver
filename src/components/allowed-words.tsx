@@ -1,14 +1,9 @@
 import { use } from "react";
 import { checkWord } from "@/lib/check-word.ts";
 import { useStore } from "@/lib/store.ts";
-import { normalizeFinalLetters } from "@/lib/utils.ts";
+import { getAllWords } from "@/lib/all-words.ts";
 
-const allWordsPromise = import("@/assets/word-list.json").then(
-  ({ default: wordsList }) =>
-    wordsList.map(
-      (word) => [word, normalizeFinalLetters(word).split("")] as const,
-    ),
-);
+const allWordsPromise = getAllWords();
 const numberFormat = new Intl.NumberFormat("he");
 
 export const AllowedWords = () => {
