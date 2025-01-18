@@ -11,6 +11,7 @@ export default defineConfig({
       },
     }),
   ],
+  base: "/wordle-solver/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
