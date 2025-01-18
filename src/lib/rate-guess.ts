@@ -3,7 +3,9 @@ import { Constraints } from "@/lib/types.ts";
 export const rateGuess = (
   guess: string[],
   constraints: Constraints,
-  allowedWords: (readonly [string, string[]])[],
+  allowedWords: number,
+  greenLettersCounters: Map<string, number>[],
+  yellowOrGreenLettersCounter: Map<string, number>,
 ) => {
   const scorePerLetter = guess.map((letter, index) => {
     if (
@@ -17,25 +19,24 @@ export const rateGuess = (
     if (isYellow && constraints.yellowByIndex.get(index)?.has(letter)) {
       return 0;
     }
-    const greenWords = allowedWords.reduce(
-      (count, [, word]) => (word[index] === letter ? count + 1 : count),
-      0,
-    );
-    const pGreen = greenWords / allowedWords.length;
+    const greenWords = greenLettersCounters[index].get(letter) ?? 0;
+    const pGreen = greenWords / allowedWords;
     if (isYellow) {
-      return 1 - pGreen * pGreen - (1 - pGreen) * (1 - pGreen);
+      return entropy(pGreen, 1 - pGreen);
     }
-    const yellowWords = allowedWords.reduce(
-      (count, [, word]) => (word.includes(letter) ? count + 1 : count),
-      0,
-    );
-    const pYellow = yellowWords / allowedWords.length - pGreen;
-    const pOther = 1 - pGreen - pYellow;
-    return 1 - pGreen * pGreen - pYellow * pYellow - pOther * pOther;
+    const yellowOrGreenWords = yellowOrGreenLettersCounter.get(letter) ?? 0;
+    const pYellow = yellowOrGreenWords / allowedWords - pGreen;
+    return entropy(pGreen, pYellow); //, 1 - pGreen - pYellow);
   });
   return (
     scorePerLetter.reduce((acc, letter) => acc + letter, 0) /
-    scorePerLetter.length /
-    0.75
+    scorePerLetter.length
   );
+};
+
+const entropy = (...args: number[]) => {
+  if (args.every((x) => x === 0)) return 0;
+  return -args
+    .filter((x) => x !== 0)
+    .reduce((sum, p) => sum + p * Math.log2(p), 0);
 };

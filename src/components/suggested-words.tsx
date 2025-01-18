@@ -10,6 +10,10 @@ import {
 } from "@/components/ui/table.tsx";
 import { checkWord } from "@/lib/check-word.ts";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
+import {
+  createLettersCounters,
+  createYellowLettersCounter,
+} from "@/lib/counter.ts";
 
 const allWordsPromise = getAllWords();
 
@@ -20,14 +24,20 @@ export const SuggestedWords = ({ className }: { className?: string }) => {
   const allowedWords = allWords.filter(([, letters]) =>
     checkWord(letters, constraints),
   );
-  const limitedWords =
-    allowedWords.length > 1000 ? allowedWords.slice(0, 1000) : allowedWords;
+  const greenLettersCounters = createLettersCounters(allowedWords);
+  const yellowLettersCounter = createYellowLettersCounter(allowedWords);
   const ratedWords =
     allowedWords.length === 1
       ? [{ score: 1, word: allowedWords[0][0], letter: allowedWords[0][1] }]
       : (hardMode || allowedWords.length === 2 ? allowedWords : allWords)
           .map(([word, letters]) => ({
-            score: rateGuess(letters, constraints, limitedWords),
+            score: rateGuess(
+              letters,
+              constraints,
+              allowedWords.length,
+              greenLettersCounters,
+              yellowLettersCounter,
+            ),
             word,
             letters,
           }))
