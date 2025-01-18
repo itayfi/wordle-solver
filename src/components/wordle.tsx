@@ -10,9 +10,13 @@ const REGEX_HEBREW_SIGNLE = "^[א-ת]$";
 export const Wordle = ({ className }: { className?: string }) => {
   const count = useStore(({ words }) => words.length);
   const reset = useStore(({ reset }) => reset);
+  const lastWord = useStore(({ words }) => words[words.length - 1]);
+  const shouldAddExtra = lastWord.some(
+    ({ letter, mode }) => letter !== null || mode !== null,
+  );
   return (
     <div className={cn("space-y-5", className)}>
-      {[...new Array(count + 1)].map((_, i) => (
+      {[...new Array(count + (shouldAddExtra ? 1 : 0))].map((_, i) => (
         <WordleRow key={i} index={i} />
       ))}
       <Button onClick={reset} className="block mx-auto" variant="outline">
@@ -102,7 +106,7 @@ const WordleLetter = forwardRef(
           type="text"
           pattern={REGEX_HEBREW_SIGNLE}
           className={cn(
-            "relative peer bg-background flex size-12 text-center border-y border-e border-input text-xl font-bold shadow-sm transition-all group-first:rounded-s-md group-first:border-s group-last:rounded-e-md focus:ring-1 focus:ring-ring focus:z-10",
+            "relative peer bg-background flex size-12 text-center border-y border-e border-input text-xl font-bold shadow-sm transition-all duration-400 group-first:rounded-s-md group-first:border-s group-last:rounded-e-md focus:ring-1 focus:ring-ring focus:z-10",
             {
               "bg-emerald-700": mode === "green",
               "bg-yellow-400": mode === "yellow",
@@ -152,7 +156,8 @@ const LetterModeButton = ({
       "bg-emerald-700": mode === "green",
       "bg-yellow-400": mode === "yellow",
       "bg-neutral-500": mode === "grey",
-      "ring-1 ring-ring": isSelected,
+      "ring-2 ring-ring": isSelected,
+      "hover:ring-2 hover:ring-border": !isSelected,
     })}
     onClick={onClick}
   >

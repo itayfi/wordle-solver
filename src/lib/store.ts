@@ -22,6 +22,7 @@ export const useStore = create(
       constraints: {
         greens: [null, null, null, null, null],
         yellows: new Set(),
+        yellowByIndex: new Map(),
         greys: new Set(),
       },
       setLetter: (wordIndex, letterIndex, data) => {
@@ -57,6 +58,7 @@ export const useStore = create(
           constraints: {
             greens: [null, null, null, null, null],
             yellows: new Set(),
+            yellowByIndex: new Map(),
             greys: new Set(),
           },
         });
@@ -97,24 +99,31 @@ export const useStore = create(
 function calculateConstraints(words: LetterInfo[][]): Store["constraints"] {
   const greens: (string | null)[] = [null, null, null, null, null];
   const yellows = new Set<string>();
+  const yellowByIndex = new Map<number, Set<string>>();
   const greys = new Set<string>();
 
   for (const word of words) {
-    for (const letterIndex in word) {
+    for (let letterIndex = 0; letterIndex < word.length; letterIndex++) {
       const { letter, mode } = word[letterIndex];
       if (letter === null) continue;
+      const normalizedLetter = normalizeFinalLetters(letter);
       switch (mode) {
         case "green":
-          greens[letterIndex] = normalizeFinalLetters(letter);
+          greens[letterIndex] = normalizedLetter;
           break;
         case "yellow":
-          yellows.add(normalizeFinalLetters(letter));
+          yellows.add(normalizedLetter);
+          yellowByIndex.set(
+            letterIndex,
+            yellowByIndex.get(letterIndex) ?? new Set(),
+          );
+          yellowByIndex.get(letterIndex)?.add(normalizedLetter);
           break;
         case "grey":
-          greys.add(normalizeFinalLetters(letter));
+          greys.add(normalizedLetter);
       }
     }
   }
 
-  return { greens, yellows, greys };
+  return { greens, yellows, yellowByIndex, greys };
 }

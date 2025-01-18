@@ -5,6 +5,9 @@ export function checkWord(word: string[], constraints: Constraints) {
     if (constraints.greens[i] !== null && constraints.greens[i] !== word[i]) {
       return false;
     }
+    if (constraints.yellowByIndex.get(i)?.has(word[i])) {
+      return false;
+    }
     if (constraints.greys.has(word[i])) {
       return false;
     }
