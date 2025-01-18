@@ -1,6 +1,6 @@
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { KeyboardEvent, MutableRefObject, useRef } from "react";
+import { ForwardedRef, forwardRef, KeyboardEvent, useRef } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { LetterMode } from "@/lib/types.ts";
 
@@ -55,7 +55,9 @@ const WordleRow = ({ index }: { index: number }) => {
       {[...new Array(5)].map((_, i) => (
         <WordleLetter
           key={i}
-          inputs={inputs}
+          ref={(el) => {
+            inputs.current[i] = el;
+          }}
           wordIndex={index}
           letterIndex={i}
           onKeyUp={onKeyUp}
@@ -66,71 +68,74 @@ const WordleRow = ({ index }: { index: number }) => {
 };
 
 const EMPTY_LETTER = { letter: null, mode: null };
-const WordleLetter = ({
-  wordIndex,
-  letterIndex,
-  inputs,
-  onKeyUp,
-}: {
-  wordIndex: number;
-  letterIndex: number;
-  inputs: MutableRefObject<(HTMLInputElement | null)[]>;
-  onKeyUp: (
-    event: KeyboardEvent<HTMLInputElement>,
-    letterIndex: number,
-  ) => void;
-}) => {
-  const { letter, mode } = useStore(
-    (state) => state.words[wordIndex]?.[letterIndex] ?? EMPTY_LETTER,
-  );
-  const setLetter = useStore(({ setLetter }) => setLetter);
-  const setMode = (newMode: LetterMode) =>
-    setLetter(wordIndex, letterIndex, { mode: newMode });
+const WordleLetter = forwardRef(
+  (
+    {
+      wordIndex,
+      letterIndex,
+      onKeyUp,
+    }: {
+      wordIndex: number;
+      letterIndex: number;
+      onKeyUp: (
+        event: KeyboardEvent<HTMLInputElement>,
+        letterIndex: number,
+      ) => void;
+    },
+    ref: ForwardedRef<HTMLInputElement>,
+  ) => {
+    const { letter, mode } = useStore(
+      (state) => state.words[wordIndex]?.[letterIndex] ?? EMPTY_LETTER,
+    );
+    const setLetter = useStore(({ setLetter }) => setLetter);
+    const setMode = (newMode: LetterMode) =>
+      setLetter(wordIndex, letterIndex, { mode: newMode });
 
-  return (
-    <div className="relative group">
-      <input
-        ref={(el) => (inputs.current[letterIndex] = el)}
-        onKeyDown={onKeyDown}
-        onChange={(event) => event.preventDefault()}
-        onKeyUp={(event) => onKeyUp(event, letterIndex)}
-        value={letter ?? ""}
-        type="text"
-        pattern={REGEX_HEBREW_SIGNLE}
-        className={cn(
-          "relative peer bg-background flex size-12 text-center border-y border-e border-input text-xl shadow-sm transition-all group-first:rounded-s-md group-first:border-s group-last:rounded-e-md focus:ring-1 focus:ring-ring focus:z-10",
-          {
-            "bg-emerald-700": mode === "green",
-            "bg-yellow-400": mode === "yellow",
-            "bg-neutral-500": mode === "grey",
-          },
-        )}
-      />
-      <div className="absolute hidden peer-focus:flex group-hover:flex flex-row bg-background gap-1 border rounded-sm shadow-sm p-2 z-10">
-        <LetterModeButton
-          mode="green"
-          isSelected={mode === "green"}
-          onClick={() => setMode("green")}
+    return (
+      <div className="relative group">
+        <input
+          ref={ref}
+          onKeyDown={onKeyDown}
+          onChange={(event) => event.preventDefault()}
+          onKeyUp={(event) => onKeyUp(event, letterIndex)}
+          value={letter ?? ""}
+          type="text"
+          pattern={REGEX_HEBREW_SIGNLE}
+          className={cn(
+            "relative peer bg-background flex size-12 text-center border-y border-e border-input text-xl shadow-sm transition-all group-first:rounded-s-md group-first:border-s group-last:rounded-e-md focus:ring-1 focus:ring-ring focus:z-10",
+            {
+              "bg-emerald-700": mode === "green",
+              "bg-yellow-400": mode === "yellow",
+              "bg-neutral-500": mode === "grey",
+            },
+          )}
         />
-        <LetterModeButton
-          mode="yellow"
-          isSelected={mode === "yellow"}
-          onClick={() => setMode("yellow")}
-        />
-        <LetterModeButton
-          mode="grey"
-          isSelected={mode === "grey"}
-          onClick={() => setMode("grey")}
-        />
-        <LetterModeButton
-          mode={null}
-          isSelected={mode === null}
-          onClick={() => setMode(null)}
-        />
+        <div className="absolute hidden peer-focus:flex group-hover:flex flex-row bg-background gap-1 border rounded-sm shadow-sm p-2 z-10">
+          <LetterModeButton
+            mode="green"
+            isSelected={mode === "green"}
+            onClick={() => setMode("green")}
+          />
+          <LetterModeButton
+            mode="yellow"
+            isSelected={mode === "yellow"}
+            onClick={() => setMode("yellow")}
+          />
+          <LetterModeButton
+            mode="grey"
+            isSelected={mode === "grey"}
+            onClick={() => setMode("grey")}
+          />
+          <LetterModeButton
+            mode={null}
+            isSelected={mode === null}
+            onClick={() => setMode(null)}
+          />
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+);
 
 const LetterModeButton = ({
   mode,
