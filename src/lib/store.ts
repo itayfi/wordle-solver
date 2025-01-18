@@ -84,10 +84,10 @@ export const useStore = create(
               words: data.state.words,
             },
           });
-          localStorage.setItem(name, str);
+          sessionStorage.setItem(name, str);
         },
         removeItem(name: string) {
-          localStorage.removeItem(name);
+          sessionStorage.removeItem(name);
         },
       },
     },
