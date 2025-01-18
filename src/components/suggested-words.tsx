@@ -17,14 +17,21 @@ export const SuggestedWords = ({ className }: { className?: string }) => {
   const [hardMode, setHardMode] = useState(false);
   const allWords = use(allWordsPromise);
   const constraints = useStore(({ constraints }) => constraints);
-  const ratedWords = allWords
-    .filter(([, letters]) => !hardMode || checkWord(letters, constraints))
-    .map(([word, letters]) => ({
-      score: rateGuess(letters, constraints),
-      word,
-      letters,
-    }))
-    .sort((a, b) => b.score - a.score);
+  const allowedWords = allWords.filter(([, letters]) =>
+    checkWord(letters, constraints),
+  );
+  const limitedWords =
+    allowedWords.length > 1000 ? allowedWords.slice(0, 1000) : allowedWords;
+  const ratedWords =
+    allowedWords.length === 1
+      ? [{ score: 1, word: allowedWords[0][0], letter: allowedWords[0][1] }]
+      : (hardMode || allowedWords.length === 2 ? allowedWords : allWords)
+          .map(([word, letters]) => ({
+            score: rateGuess(letters, constraints, limitedWords),
+            word,
+            letters,
+          }))
+          .sort((a, b) => b.score - a.score);
 
   return (
     <div className={className}>

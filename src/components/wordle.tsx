@@ -11,9 +11,9 @@ export const Wordle = ({ className }: { className?: string }) => {
   const count = useStore(({ words }) => words.length);
   const reset = useStore(({ reset }) => reset);
   const lastWord = useStore(({ words }) => words[words.length - 1]);
-  const shouldAddExtra = lastWord.some(
-    ({ letter, mode }) => letter !== null || mode !== null,
-  );
+  const shouldAddExtra = lastWord
+    ? lastWord.some(({ letter, mode }) => letter !== null || mode !== null)
+    : true;
   return (
     <div className={cn("space-y-5", className)}>
       {[...new Array(count + (shouldAddExtra ? 1 : 0))].map((_, i) => (

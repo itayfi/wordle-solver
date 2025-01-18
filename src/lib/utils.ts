@@ -6,4 +6,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const normalizeFinalLetters = (word: string) =>
-  word.replace("ם", "מ").replace("ף", "פ").replace("ן", "נ").replace("ך", "כ");
+  word
+    .replace("ם", "מ")
+    .replace("ף", "פ")
+    .replace("ן", "נ")
+    .replace("ך", "כ")
+    .replace("ץ", "צ");
