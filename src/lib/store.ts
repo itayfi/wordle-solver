@@ -1,19 +1,10 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-
-export type LetterMode = "green" | "yellow" | "grey" | null;
-export type LetterInfo = {
-  letter: string | null;
-  mode: "green" | "yellow" | "grey" | null;
-};
+import { createJSONStorage, persist } from "zustand/middleware";
+import { Constraints, LetterInfo } from "@/lib/types.ts";
 
 type Store = {
   words: LetterInfo[][];
-  constraints: {
-    greens: (string | null)[];
-    yellows: Set<string>;
-    greys: Set<string>;
-  };
+  constraints: Constraints;
 
   setLetter(
     wordIndex: number,

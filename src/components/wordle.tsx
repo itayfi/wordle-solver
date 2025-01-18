@@ -1,7 +1,8 @@
-import { LetterMode, useStore } from "@/lib/store";
+import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { KeyboardEvent, MutableRefObject, useRef } from "react";
 import { Button } from "@/components/ui/button.tsx";
+import { LetterMode } from "@/lib/types.ts";
 
 const REGEX_HEBREW = "^[א-ת]+$";
 const REGEX_HEBREW_SIGNLE = "^[א-ת]$";
