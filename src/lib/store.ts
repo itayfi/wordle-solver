@@ -12,6 +12,7 @@ type Store = {
     letterIndex: number,
     data: Partial<LetterInfo>,
   ): void;
+  addWord(words: LetterInfo[]): void;
   reset(): void;
 };
 
@@ -62,6 +63,11 @@ export const useStore = create(
             constraints: calculateConstraints(newWords),
           };
         });
+      },
+      addWord(word: LetterInfo[]) {
+        set(({ words }) => ({
+          words: [...words, word],
+        }));
       },
       reset() {
         set({
