@@ -33,7 +33,18 @@ export const useStore = create(
                   ...words,
                   [...new Array(5)].map(() => ({ letter: null, mode: null })),
                 ]
-              : words;
+              : words.slice(
+                  0,
+                  words.reduce(
+                    (acc, word, index) =>
+                      word.some(
+                        ({ letter, mode }) => letter !== null || mode !== null,
+                      )
+                        ? index + 1
+                        : acc,
+                    1,
+                  ),
+                );
           const newWords = extendedWords.map((word, wIdx) =>
             wIdx === wordIndex
               ? word.map((letter, lIdx) =>

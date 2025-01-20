@@ -1,6 +1,6 @@
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { ForwardedRef, forwardRef, KeyboardEvent, useRef } from "react";
+import { ForwardedRef, forwardRef, useRef } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { LetterMode } from "@/lib/types.ts";
 
@@ -26,45 +26,38 @@ export const Wordle = ({ className }: { className?: string }) => {
   );
 };
 
-const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) =>
-  event.preventDefault();
-
 const WordleRow = ({ index }: { index: number }) => {
   const letterInfos = useStore(({ words }) => words[index]);
   const setLetter = useStore(({ setLetter }) => setLetter);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
-  const onKeyUp = (
-    event: KeyboardEvent<HTMLInputElement>,
-    letterIndex: number,
-  ) => {
-    event.preventDefault();
-    if (event.key === "Backspace") {
+  const onInput = (data: string, letterIndex: number) => {
+    if (data === "Backspace") {
       setLetter(index, letterIndex, { letter: null });
       if (letterIndex > 0) {
         inputs.current[letterIndex - 1]?.focus();
       }
-    } else if (new RegExp(REGEX_HEBREW).test(event.key)) {
+    } else if (new RegExp(REGEX_HEBREW).test(data)) {
       if (
         index < 4 &&
-        event.currentTarget.value !== "" &&
+        letterInfos?.[letterIndex]?.letter !== null &&
         letterInfos?.[letterIndex + 1]?.letter === null
       ) {
-        setLetter(index, letterIndex + 1, { letter: event.key });
+        setLetter(index, letterIndex + 1, { letter: data });
       } else {
-        setLetter(index, letterIndex, { letter: event.key });
+        setLetter(index, letterIndex, { letter: data });
       }
       inputs.current[letterIndex + 1]?.focus();
-    } else if (event.key === "ArrowRight") {
+    } else if (data === "ArrowRight") {
       if (letterIndex > 0) {
         inputs.current[letterIndex - 1]?.focus();
       }
-    } else if (event.key === "ArrowLeft") {
+    } else if (data === "ArrowLeft") {
       inputs.current[letterIndex + 1]?.focus();
-    } else if (event.key === "0") {
+    } else if (data === "0") {
       setLetter(index, letterIndex, { mode: "grey" });
-    } else if (event.key === "1") {
+    } else if (data === "1") {
       setLetter(index, letterIndex, { mode: "yellow" });
-    } else if (event.key === "2") {
+    } else if (data === "2") {
       setLetter(index, letterIndex, { mode: "green" });
     }
   };
@@ -79,7 +72,7 @@ const WordleRow = ({ index }: { index: number }) => {
           }}
           wordIndex={index}
           letterIndex={i}
-          onKeyUp={onKeyUp}
+          onInput={onInput}
         />
       ))}
     </div>
@@ -92,14 +85,11 @@ const WordleLetter = forwardRef(
     {
       wordIndex,
       letterIndex,
-      onKeyUp,
+      onInput,
     }: {
       wordIndex: number;
       letterIndex: number;
-      onKeyUp: (
-        event: KeyboardEvent<HTMLInputElement>,
-        letterIndex: number,
-      ) => void;
+      onInput: (data: string, letterIndex: number) => void;
     },
     ref: ForwardedRef<HTMLInputElement>,
   ) => {
@@ -114,9 +104,27 @@ const WordleLetter = forwardRef(
       <div className="relative group">
         <input
           ref={ref}
-          onKeyDown={onKeyDown}
-          onChange={(event) => event.preventDefault()}
-          onKeyUp={(event) => onKeyUp(event, letterIndex)}
+          onKeyDown={(event) => {
+            if (["Backspace", "ArrowRight", "ArrowLeft"].includes(event.key)) {
+              event.preventDefault();
+              onInput(event.key, letterIndex);
+            }
+          }}
+          onInput={(event) => {
+            const nativeEvent = event.nativeEvent as InputEvent;
+            if (nativeEvent.inputType === "deleteContentBackward") {
+              onInput("Backspace", letterIndex);
+              return;
+            }
+            if (
+              !nativeEvent.inputType.startsWith("insert") ||
+              nativeEvent.data === null
+            )
+              return;
+            for (let i = 0; i < nativeEvent.data.length; i++) {
+              onInput(nativeEvent.data.charAt(i), letterIndex + i);
+            }
+          }}
           value={letter ?? ""}
           type="text"
           pattern={REGEX_HEBREW_SIGNLE}
