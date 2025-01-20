@@ -175,7 +175,7 @@ const LetterModeButton = ({
   onClick?: () => void;
 }) => (
   <button
-    className={cn("size-6 rounded-full cursor-pointer", {
+    className={cn("size-9 lg:size-6 rounded-full cursor-pointer", {
       "bg-emerald-700": mode === "green",
       "bg-yellow-400": mode === "yellow",
       "bg-neutral-500": mode === "grey",
