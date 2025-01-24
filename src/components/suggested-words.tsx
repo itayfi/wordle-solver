@@ -15,15 +15,23 @@ import {
   createYellowLettersCounter,
 } from "@/lib/counter.ts";
 import { Button } from "@/components/ui/button.tsx";
-import { PlusCircle } from "lucide-react";
+import { CircleHelp, PlusCircle, ThumbsDown } from "lucide-react";
 import { LetterMode } from "@/lib/types.ts";
 import { normalizeFinalLetters } from "@/lib/utils.ts";
+import { useWordBlockList } from "@/lib/use-word-block-list.ts";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip.tsx";
 
 const allWordsPromise = getAllWords();
 
 export const SuggestedWords = ({ className }: { className?: string }) => {
   const [hardMode, setHardMode] = useState(false);
-  const allWords = use(allWordsPromise);
+  const { isBlocked, blockWord } = useWordBlockList();
+  const allWords = use(allWordsPromise).filter(([word]) => !isBlocked(word));
   const constraints = useStore(({ constraints }) => constraints);
   const addWord = useStore(({ addWord }) => addWord);
   const allowedWords = allWords.filter(([, letters]) =>
@@ -68,52 +76,82 @@ export const SuggestedWords = ({ className }: { className?: string }) => {
   };
 
   return (
-    <div className={className}>
-      <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-        ניחושים מומלצים
-      </h3>
+    <TooltipProvider>
+      <div className={className}>
+        <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+          ניחושים מומלצים
+        </h3>
 
-      <div className="px-3">
-        <div className="flex items-center gap-2 cursor-pointer my-2">
-          <Checkbox
-            id="hardMode"
-            checked={hardMode}
-            onCheckedChange={() => setHardMode(!hardMode)}
-          />
-          <label
-            htmlFor="hardMode"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            מצב קשה
-          </label>
+        <div className="px-3">
+          <div className="flex items-center gap-2 cursor-pointer my-2">
+            <Checkbox
+              id="hardMode"
+              checked={hardMode}
+              onCheckedChange={() => setHardMode(!hardMode)}
+            />
+            <label
+              htmlFor="hardMode"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              מצב קשה
+            </label>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger>
+                <CircleHelp className="text-foreground/50" />
+              </TooltipTrigger>
+              <TooltipContent>
+                מאפשר להשתמש רק במילים שמתאימות לרמזים שניתנו עד עכשיו.
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          {allowedWords.length === 0 ? (
+            <p className="leading-7 mt-6">אין כאן מילים, אולי טעית?</p>
+          ) : (
+            <Table>
+              <TableBody>
+                {ratedWords.slice(0, 10).map(({ word, score }) => (
+                  <TableRow key={word}>
+                    <TableCell className="w-20">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="-my-1.5"
+                            onClick={() => onAddWord(word)}
+                          >
+                            <PlusCircle />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>נחש מילה זו</TooltipContent>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell className="text-base w-2/3">{word}</TableCell>
+                    <TableCell className="text-base w-1/3">
+                      {Math.round(score * 100)}%
+                    </TableCell>
+                    <TableCell className="w-20">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="-my-1.5"
+                            onClick={() => blockWord(word)}
+                          >
+                            <ThumbsDown />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>דווח על מילה לא תקינה</TooltipContent>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
-        {allowedWords.length === 0 ? (
-          <p className="leading-7 mt-6">אין כאן מילים, אולי טעית?</p>
-        ) : (
-          <Table>
-            <TableBody>
-              {ratedWords.slice(0, 10).map(({ word, score }) => (
-                <TableRow key={word}>
-                  <TableCell className="w-20">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="-my-1.5"
-                      onClick={() => onAddWord(word)}
-                    >
-                      <PlusCircle />
-                    </Button>
-                  </TableCell>
-                  <TableCell className="text-base w-2/3">{word}</TableCell>
-                  <TableCell className="text-base w-1/3">
-                    {Math.round(score * 100)}%
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
       </div>
-    </div>
+    </TooltipProvider>
   );
 };

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { LetterMode } from "@/lib/types.ts";
 
 const REGEX_HEBREW = "^[א-ת]+$";
-const REGEX_HEBREW_SIGNLE = "^[א-ת]$";
+const REGEX_HEBREW_SINGLE = "^[א-ת]$";
 
 export const Wordle = ({ className }: { className?: string }) => {
   const count = useStore(({ words }) => words.length);
@@ -127,7 +127,7 @@ const WordleLetter = forwardRef(
           }}
           value={letter ?? ""}
           type="text"
-          pattern={REGEX_HEBREW_SIGNLE}
+          pattern={REGEX_HEBREW_SINGLE}
           className={cn(
             "relative peer bg-background flex size-12 text-center border-y border-e border-input text-xl font-bold shadow-sm transition-all duration-400 group-first:rounded-s-md group-first:border-s group-last:rounded-e-md focus:ring-1 focus:ring-ring focus:z-10",
             {

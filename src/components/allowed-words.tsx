@@ -2,6 +2,7 @@ import { use } from "react";
 import { checkWord } from "@/lib/check-word.ts";
 import { useStore } from "@/lib/store.ts";
 import { getAllWords } from "@/lib/all-words.ts";
+import { useWordBlockList } from "@/lib/use-word-block-list.ts";
 
 const allWordsPromise = getAllWords();
 const numberFormat = new Intl.NumberFormat("he");
@@ -9,8 +10,9 @@ const numberFormat = new Intl.NumberFormat("he");
 export const AllowedWords = () => {
   const allWords = use(allWordsPromise);
   const constraints = useStore(({ constraints }) => constraints);
-  const allowedWords = allWords.filter(([, word]) =>
-    checkWord(word, constraints),
+  const { isBlocked } = useWordBlockList();
+  const allowedWords = allWords.filter(
+    ([, word]) => !isBlocked(word.join("")) && checkWord(word, constraints),
   );
 
   return (
